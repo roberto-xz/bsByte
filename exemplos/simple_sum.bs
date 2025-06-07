@@ -1,0 +1,13 @@
+_V_
+
+;
+; Exemple of simple sum in bs_lang
+;
+
+
+set @1 10     ;save value 10 in accumulator 1    
+set @2 20      
+sta @2 #0x001 ;write value in adress 1  
+sum @1 #0x001 ;sum in accumulator 1
+say @1        ;print result
+ext

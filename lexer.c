@@ -4,11 +4,16 @@
 **
 */
 
-#include "constants.h"
-#include "utils.c"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "lexer_utils/valid_adress.c"
+#include "lexer_utils/valid_accum.c"
+#include "lexer_utils/valid_stvalue.c"
+#include "constants.h"
+#include "utils.c"
 
 /*
 *
@@ -45,13 +50,14 @@ int analize_part_1(char part_1[], int line) {
  */
 int analize_part_2(char part_1[], char part_2[], int line, char labels[20][20],int label_count) {
     if (strcmp(part_1,"jpm") == 0) {
+        // verifica se é um endereço e se é válido
         if (part_2[0] == '#') {
-            if (strlen(part_2) < 7 || strlen(part_2) > 7 ) {
+            if (valid_adress(part_2)) {
                 printf("lexer-error: invalid jump adress %s: line -> %d\n", part_2, line);
                 return 1;
             }
         }
-
+        // varifica se é um label e se é válido.
         if (part_2[0] == '$') {
             short label_is_declared = 0;
             for (int x=0; x<label_count; x++){
@@ -66,77 +72,58 @@ int analize_part_2(char part_1[], char part_2[], int line, char labels[20][20],i
     }
 
     if (strcmp(part_1,"mov") == 0 || strcmp(part_1,"say") == 0 ) {
-
-        if (part_2[0] == '@') {
-
-            if (strlen(part_2) < 2 || strlen(part_2) > 2 ) {
-                printf("lexer-error: invalid accumulator adress %s: line -> %d\n", part_2, line);
-                return 1;
-            }
-
-            char ac_value[2] = {part_2[1],'\0'};
-            printf("%d",atoi(ac_value));
-            if (atoi(ac_value) < 0 || atoi(ac_value) > 4 ) {
-                printf("lexer-error: invalid accumulator adress %s: line -> %d\n", part_2, line);
-                return 1;
-            }
-        }
+         // varifica se é um endereço e se é válido
         if (part_2[0] == '#') {
-            if (strlen(part_2) < 6 || strlen(part_2) > 6 ) {
-                printf("lexer-error: invalid adress %s: line -> %d\n", part_2, line);
+            if (valid_adress(part_2)) {
+                printf("lexer-error: invalid jump adress %s: line -> %d\n", part_2, line);
                 return 1;
             }
         }
     }
 
-    if (strlen(part_2) < 2 || strlen(part_2) > 2 ) {
-        printf("lexer-error: invalid accumulator adress %s: line -> %d\n", part_2, line);
-        return 1;
-    }
-
-    char ac_value[2] = {part_2[1],'\0'};
-    if (atoi(ac_value) < 0 || atoi(ac_value) > 4 ) {
-        printf("lexer-error: invalid accumulator adress %s: line -> %d\n", part_2, line);
-        return 1;
+    // varifica se é um acumulador e se é válido
+    if (part_2[0] == '@') {
+        if (valid_accum(part_2)) {
+            printf("lexer-error: invalid accumulator adress %s: line -> %d\n", part_2, line);
+            return 1;
+        }
     }
     return 0;
 }
 
+
 int analize_part_3(char part_1[], char part_3[], int line){
     if (strcmp(part_1,"jpm") == 0 || strcmp(part_1,"say") == 0) return 0;
-    if (strcmp(part_1,"mov") == 0 ){
+    if (strcmp(part_1,"mov") == 0 ) {
         if (part_3[0] == '#'){
-            if (strlen(part_3) < 6 || strlen(part_3) > 6 ) {
+            if (valid_adress(part_3)) {
                 printf("lexer-error: invalid adress %s: line -> %d\n", part_3, line);
                 return 1;
             }
         }
         if (part_3[0] == '@'){
-            if (strlen(part_3) < 2 || strlen(part_3) > 2 ) {
-                printf("lexer-error: invalid accumulator adress %s: line -> %d\n", part_3, line);
-                return 1;
-            }
-
-            char ac_value[2] = {part_3[1],'\0'};
-            if (atoi(ac_value) < 0 || atoi(ac_value) > 4 ) {
+            if (valid_accum(part_3)) {
                 printf("lexer-error: invalid accumulator adress %s: line -> %d\n", part_3, line);
                 return 1;
             }
         }
     }
 
-    if (strcmp(part_1,"set") == 0){
-        if (strlen(part_3) < 6 || strlen(part_3) > 6 ) {
+    if (strcmp(part_1,"set") == 0) {
+        if (valid_stvalue(part_3)) {
             printf("lexer-error: invalid hex(6) value %s: line -> %d\n", part_3, line);
             return 1;
         }
     }
 
-    if (strlen(part_3) < 6 || strlen(part_3) > 6 ) {
-        printf("lexer-error: adress %s: line -> %d\n", part_3, line);
-        return 1;
+    if (part_3[0] == '#') {
+        if (valid_adress(part_3)) {
+            printf("lexer-error: invalid jump adress %s: line -> %d\n", part_3, line);
+            return 1;
+        }
     }
-    return 1;
+
+    return 0;
 }
 
 int lexer(char* filename) {

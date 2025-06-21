@@ -15,6 +15,7 @@
 #include "constants.h"
 #include "error.c"
 #include "utils.c"
+#include "tokens.c"
 
 
 
@@ -76,6 +77,8 @@ int analize_part_3(char part_1[], char part_3[], int line){
 
 int lexer(char* filename) {
     FILE* file_data = fopen(filename, "r");
+    struct token_node *tokens = NULL;
+
     if (file_data == NULL) {
         printf("lexer-error: file [%s] not found \n", filename);
         return 1;
@@ -99,21 +102,19 @@ int lexer(char* filename) {
         }
 
         if (strlen(line) >= 3 && line[0] != ';' && lines_count > 1) {
-            if (line[0] == ':') {
-                strncpy(labels[label_count], strtok(line, " "), 19);
-                labels[label_count][19] = '\0';
-                labels[label_count][0]  =  '$';
-                label_count +=1;
-            }else {
-                command_parts cmd_parts = split_line(line);
-                analize_part_1(cmd_parts.part_1, lines_count);
-                analize_part_2(cmd_parts,lines_count);
-                //if (analize_part_3(cmd_parts.part_1, cmd_parts.part_3,lines_count) == 1) return 1;
+            command_parts cmd_parts = split_line(line);
+            add_token(cmd_parts.part_1,lines_count,1,&tokens);
+
+            if (strcmp(cmd_parts.part_1, "ext") != 0) {
+                add_token(cmd_parts.part_2, lines_count, 2, &tokens);
+                if (strcmp(cmd_parts.part_1, "say") != 0 && strcmp(cmd_parts.part_1, "jpm") != 0)
+                    add_token(cmd_parts.part_3, lines_count, 3, &tokens);
             }
         }
+
         lines_count += 1;
     }
-
+    print_tokens(&tokens);
     return 0;
 }
 
